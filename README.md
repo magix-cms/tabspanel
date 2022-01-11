@@ -25,6 +25,13 @@ Plugin tabspanel for Magix CMS 3
 La mise à jour du plugin est à effectuer en remplaçant le dossier du plugin par la nouvelle version
 et de se connecter à l'administration de celui-ci pour faire la mise à jour des tables SQL.
 
+
+### Ajouter dans product.tpl la ligne suivante
+
+```smarty
+{include file="brick/tabspanel.tpl"}
+````
+
 <pre>
 
 This file is a plugin of Magix CMS.
