@@ -34,18 +34,17 @@ class plugins_tabspanel_db
 						break;
 					case 'activetabspanel':
 						$sql = 'SELECT 
-									id_tp,
-									img_tp,
-									title_tp,
-									desc_tp
+									ms.id_tp,
+									mtc.title_tp,
+									mtc.desc_tp
  								FROM mc_tabspanel ms
-								LEFT JOIN mc_tabspanel_content msc USING(id_tp)
-								LEFT JOIN mc_lang ml USING(id_lang)
-								WHERE iso_lang = :lang
+								JOIN mc_tabspanel_content mtc on (ms.id_tp = mtc.id_tp)
+								JOIN mc_lang ml USING(id_lang)
+								WHERE iso_lang = :iso
 								  AND ms.module_tp = :module_tp
 								  AND ms.id_module '.(empty($params['id_module']) ? 'IS NULL' : '= :id_module').'
-								  AND published_tp = 1
-								ORDER BY order_tp';
+								  AND mtc.published_tp = 1
+								ORDER BY ms.order_tp';
                         if(empty($params['id_module'])) unset($params['id_module']);
 						break;
 					case 'tabspanelContent':
