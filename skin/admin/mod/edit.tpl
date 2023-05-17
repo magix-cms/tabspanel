@@ -22,6 +22,7 @@
         libjs/vendor/jquery-ui-1.12.min.js,
         {baseadmin}/template/js/table-form.min.js,
         libjs/vendor/progressBar.min.js,
+        {baseadmin}/template/js/img-drop.min.js,
         plugins/tabspanel/js/admin.min.js
     {/strip}{/capture}
     {capture name="vendors"}{strip}
@@ -35,7 +36,7 @@
         {if isset($smarty.get.edit)}&edit={$smarty.get.edit}{/if}
         {if isset($smarty.get.tabs)}&tabs={$smarty.get.tabs}{/if}
         {if isset($smarty.get.tab)}&tab={$smarty.get.tab}{/if}
-        &plugin={$smarty.get.plugin}&mod_edit={$smarty.get.mod_edit}
+        &plugin={$smarty.get.plugin}{if isset($smarty.get.mod_edit)}&mod_edit={$smarty.get.mod_edit}{/if}
     {/strip}{/capture}
     <script type="text/javascript">
         window.addEventListener('load', function() {

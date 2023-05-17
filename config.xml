@@ -19,13 +19,16 @@
 	</authors>
 	<release>
 		<date_create>17/12/2021</date_create>
-		<date_update>22/12/2021</date_update>
-		<version>1.0</version>
+		<date_update>17/05/2023</date_update>
+		<version>2.0</version>
 		<phase>Stable</phase>
 	</release>
 	<bind>
 		<core>
 			<name>product</name>
+		</core>
+		<core>
+			<name>news</name>
 		</core>
 	</bind>
 	<support>

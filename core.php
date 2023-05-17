@@ -93,11 +93,11 @@ class plugins_tabspanel_core extends plugins_tabspanel_admin
 
                     $defaultLanguage = $this->collectionLanguage->fetchData(array('context' => 'one', 'type' => 'default'));
                     $page = $this->getItems('tabspanelContent', array('id' => $this->id, 'id_lang' => $defaultLanguage['id_lang']), 'one', false);
-                    $newimg = $this->getItems('lastImgId', null, 'one', false);
+                    $newimg = $this->getItems('lastImgId', ['id_tp' => $this->id], 'one', false);
                     // If $newimg = NULL return 0
-                    $newimg['id_img'] = empty($newimg) ? 0 : $newimg['id_img'];
+					$newimg['index'] = $newimg['index'] ?? 0;
 
-                    $name = http_url::clean($page['title_tp']);
+                    /*$name = http_url::clean($page['title_tp']);
                     $resultUpload = $this->upload->setMultipleImageUpload(
                         'img_multiple',
                         array(
@@ -116,18 +116,29 @@ class plugins_tabspanel_core extends plugins_tabspanel_admin
                             'upload_dir' => $this->id //string ou array
                         ),
                         false
-                    );
+                    );*/
 
-                    if ($resultUpload != null) {
+					$resultUpload = $this->upload->multipleImageUpload(
+						'tabspanel','tabspanel','upload/tabspanel',["$this->id"],[
+						'name' => http_url::clean($page['title_tp']),
+						'suffix' => (int)$newimg['index'],
+						'suffix_increment' => true,
+						'progress' => $this->progress,
+						'template' => $this->template
+					],false);
+
+                    if (!empty($resultUpload)) {
+						$totalUpload = count($resultUpload);
                         $percent = $this->progress->progress;
-                        $preparePercent = (90 - $percent) / count($resultUpload);
+                        $preparePercent = (90 - $percent) / $totalUpload;
+						$i = 1;
 
-                        foreach ($resultUpload as $key => $value) {
-                            if ($value['statut'] == '1') {
+                        foreach ($resultUpload as $value) {
+                            if ($value['status']) {
                                 $percent = $percent + $preparePercent;
 
                                 usleep(200000);
-                                $this->progress->sendFeedback(array('message' => $this->template->getConfigVars('creating_thumbnails'), 'progress' => $percent));
+								$this->progress->sendFeedback(['message' => sprintf($this->template->getConfigVars('creating_records'),$i,$totalUpload), 'progress' => $percent]);
 
                                 $this->add(array(
                                     'type' => 'newImg',
@@ -137,14 +148,16 @@ class plugins_tabspanel_core extends plugins_tabspanel_admin
                                     )
                                 ));
                             }
+							$i++;
                         }
 
                         usleep(200000);
                         $this->progress->sendFeedback(array('message' => $this->template->getConfigVars('creating_thumbnails_success'), 'progress' => 90));
 
                         usleep(200000);
-                        $this->progress->sendFeedback(array('message' => $this->template->getConfigVars('upload_done'), 'progress' => 100, 'status' => 'success', 'result' => $display));
-                    } else {
+                        $this->progress->sendFeedback(array('message' => $this->template->getConfigVars('upload_done'), 'progress' => 100, 'status' => 'success'));
+                    }
+					else {
                         usleep(200000);
                         $this->progress->sendFeedback(array('message' => $this->template->getConfigVars('creating_thumbnails_error'), 'progress' => 100, 'status' => 'error', 'error_code' => 'error_data'));
                     }

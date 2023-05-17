@@ -84,7 +84,7 @@ class plugins_tabspanel_db
                         $sql = 'SELECT * FROM mc_tabspanel_img WHERE `id_img` = :id';
                         break;
                     case 'lastImgId':
-                        $sql = 'SELECT id_img FROM mc_tabspanel_img ORDER BY id_img DESC LIMIT 0,1';
+                        $sql = 'SELECT id_img as `index` FROM mc_tabspanel_img WHERE id_tp = :id_tp ORDER BY id_img DESC LIMIT 0,1';
                         break;
                     case 'imgDefault':
                         $sql = 'SELECT id_img FROM mc_tabspanel_img WHERE id_tp = :id AND default_img = 1';

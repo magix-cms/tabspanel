@@ -35,10 +35,10 @@ ALTER TABLE `mc_tabspanel_content`
 ALTER TABLE `mc_tabspanel_img`
     ADD CONSTRAINT `mc_tabspanel_img_ibfk_1` FOREIGN KEY (`id_tp`) REFERENCES `mc_tabspanel` (`id_tp`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-INSERT INTO `mc_config_img` (`id_config_img`, `module_img`, `attribute_img`, `width_img`, `height_img`, `type_img`, `resize_img`) VALUES
-  (null, 'plugins', 'tabspanel', '208', '208', 'small', 'adaptive'),
-  (null, 'plugins', 'tabspanel', '408', '408', 'medium', 'adaptive'),
-  (null, 'plugins', 'tabspanel', '1000', '1000', 'large', 'basic');
+INSERT INTO `mc_config_img` (`id_config_img`, `module_img`, `attribute_img`, `width_img`, `height_img`, `type_img`, `prefix_img`, `resize_img`) VALUES
+  (null, 'tabspanel', 'tabspanel', '208', '208', 'small', 's', 'adaptive'),
+  (null, 'tabspanel', 'tabspanel', '408', '408', 'medium', 'm', 'adaptive'),
+  (null, 'tabspanel', 'tabspanel', '1000', '1000', 'large', 'l', 'basic');
 
 INSERT INTO `mc_admin_access` (`id_role`, `id_module`, `view`, `append`, `edit`, `del`, `action`)
   SELECT 1, m.id_module, 1, 1, 1, 1, 1 FROM mc_module as m WHERE name = 'tabspanel';

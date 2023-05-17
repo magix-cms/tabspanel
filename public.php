@@ -84,6 +84,13 @@ class plugins_tabspanel_public extends plugins_tabspanel_db
         return $this->data->getItems($type, $id, $context, $assign);
     }
 
+	/**
+	 * @return void
+	 */
+	private function initImageComponent() {
+		if(!isset($this->imagesComponent)) $this->imagesComponent = new component_files_images($this->template);
+	}
+
     public function setItemData($row,$current)
     {
         $string_format = new component_format_string();
@@ -92,6 +99,8 @@ class plugins_tabspanel_public extends plugins_tabspanel_db
         //if (!isset($this->imagePlaceHolder)) $this->imagePlaceHolder = $this->logo->getImagePlaceholder();
 
         if ($row != null) {
+			$this->initImageComponent();
+
             if (isset($row['name'])) {
                 $data['id'] = $row['id'];
                 $data['name'] = $row['name'];
@@ -105,22 +114,19 @@ class plugins_tabspanel_public extends plugins_tabspanel_db
                 }*/
 
                 if (isset($row['img'])) {
-                    $imgPrefix = $this->imagesComponent->prefix();
-                    $fetchConfig = $this->imagesComponent->getConfigItems(array(
-                        'module_img' => 'plugins',
-                        'attribute_img' => 'tabspanel'
-                    ));
+                    //$imgPrefix = $this->imagesComponent->prefix();
+                    $fetchConfig = $this->imagesComponent->getConfigItems('tabspanel','tabspanel');
 
                     if (is_array($row['img'])) {
-                        foreach ($row['img'] as $item => $val) {
+                        foreach ($row['img'] as $val) {
                             // # return filename without extension
-                            $pathinfo = pathinfo($val['name_img']);
-                            $filename = $pathinfo['filename'];
+                            //$pathinfo = pathinfo($val['name_img']);
+                            //$filename = $pathinfo['filename'];
 
                             /*$data['imgs'][$item]['img']['alt'] = $val['alt_img'];
                             $data['imgs'][$item]['img']['title'] = $val['title_img'];
                             $data['imgs'][$item]['img']['caption'] = $val['caption_img'];*/
-                            $data['imgs'][$item]['img']['name'] = $val['name_img'];
+                            /*$data['imgs'][$item]['img']['name'] = $val['name_img'];
                             foreach ($fetchConfig as $key => $value) {
                                 $imginfo = $this->imagesComponent->getImageInfos(component_core_system::basePath() . '/upload/tabspanel/' . $val['id_tp'] . '/' . $imgPrefix[$value['type_img']] . $val['name_img']);
                                 $data['imgs'][$item]['img'][$value['type_img']]['src'] = '/upload/tabspanel/' . $val['id_tp'] . '/' . $imgPrefix[$value['type_img']] . $val['name_img'];
@@ -134,8 +140,16 @@ class plugins_tabspanel_public extends plugins_tabspanel_db
                                 $data['imgs'][$item]['img'][$value['type_img']]['h'] = $value['resize_img'] === 'basic' ? $imginfo['height'] : $value['height_img'];
                                 $data['imgs'][$item]['img'][$value['type_img']]['ext'] = mime_content_type(component_core_system::basePath() . '/upload/tabspanel/' . $val['id_tp'] . '/' . $imgPrefix[$value['type_img']] . $val['name_img']);
                             }
-                            $data['imgs'][$item]['default'] = $val['default_img'];
+                            $data['imgs'][$item]['default'] = $val['default_img'];*/
+
+							$image = $this->imagesComponent->setModuleImage('tabspanel','tabspanel',$val['name_img'],$val['id_tp']);
+							if($val['default_img']) {
+								$data['img'] = $image;
+								$image['default'] = 1;
+							}
+							$data['imgs'][] = $image;
                         }
+						$data['img']['default'] = $this->imagesComponent->setModuleImage('tabspanel','tabspanel');
                     }
                 }
             }
