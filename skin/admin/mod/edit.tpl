@@ -6,6 +6,9 @@
         {if $debug}
             {$debug}
         {/if}
+        <p>
+            <a href="{$smarty.server.SCRIPT_NAME}?controller={$smarty.get.controller}&amp;action=edit&amp;edit={$smarty.get.edit}&amp;plugin={$smarty.get.plugin}">Retour à la liste</a>
+        </p>
         {include file="mod/tabspanel.tpl" controller="tabspanel"}
         <div id="gallery-pages" class="block-img">
             {if $images != null}

@@ -2,147 +2,159 @@
 /**
  * Class plugins_tabspanel_db
  */
-class plugins_tabspanel_db
-{
+class plugins_tabspanel_db {
 	/**
-	 * @param array $config
-	 * @param bool $params
-	 * @return mixed|null
+	 * @var debug_logger $logger
 	 */
-    public function fetchData(array $config, $params = false)
-	{
-        $sql = '';
-
-        if(is_array($config)) {
-            if($config['context'] === 'all') {
-            	switch ($config['type']) {
-					case 'tabspanel':
-						$sql = 'SELECT 
-									ms.id_tp,
-									msc.title_tp,
-                                    IFNULL(mti.default_img,0) as img_tp,
-									msc.desc_tp
- 								FROM mc_tabspanel AS ms
-								JOIN mc_tabspanel_content msc on (ms.id_tp = msc.id_tp)
-                                LEFT JOIN mc_tabspanel_img AS mti ON ( ms.id_tp = mti.id_tp AND mti.default_img = 1 )
-								JOIN mc_lang ml USING(id_lang)
-								WHERE ml.id_lang = :lang
-								  AND ms.module_tp = :module
-                                  AND ms.id_module '.(empty($params['id_module']) ? 'IS NULL' : '= :id_module').'
-								ORDER BY ms.order_tp';
-						if(empty($params['id_module'])) unset($params['id_module']);
-						break;
-					case 'activetabspanel':
-						$sql = 'SELECT 
-									ms.id_tp,
-									mtc.title_tp,
-									mtc.desc_tp
- 								FROM mc_tabspanel ms
-								JOIN mc_tabspanel_content mtc on (ms.id_tp = mtc.id_tp)
-								JOIN mc_lang ml USING(id_lang)
-								WHERE iso_lang = :iso
-								  AND ms.module_tp = :module_tp
-								  AND ms.id_module '.(empty($params['id_module']) ? 'IS NULL' : '= :id_module').'
-								  AND mtc.published_tp = 1
-								ORDER BY ms.order_tp';
-                        if(empty($params['id_module'])) unset($params['id_module']);
-						break;
-					case 'tabspanelContent':
-						$sql = 'SELECT ms.*, msc.*
-                    			FROM mc_tabspanel ms
-                    			JOIN mc_tabspanel_content msc USING(id_tp)
-                    			JOIN mc_lang ml USING(id_lang)
-                    			WHERE ms.id_tp = :id';
-						break;
-					/*case 'img':
-						$sql = 'SELECT ms.id_tp, ms.img_tp FROM mc_tabspanel ms WHERE ms.img_tp IS NOT NULL';
-						break;*/
-                    case 'images':
-                        $sql = 'SELECT img.*
-						FROM mc_tabspanel_img AS img
-						WHERE img.id_tp = :id ORDER BY order_img ASC';
-                    break;
-                    case 'imagesAll':
-                        $sql = 'SELECT img.* FROM mc_tabspanel_img AS img';
-                        break;
-				}
-
-                return $sql ? component_routing_db::layer()->fetchAll($sql,$params) : null;
-            }
-            elseif($config['context'] === 'one') {
-				switch ($config['type']) {
-					case 'tabspanelContent':
-						$sql = 'SELECT * FROM mc_tabspanel_content WHERE id_tp = :id AND id_lang = :id_lang';
-						break;
-					case 'lastTabspanel':
-						$sql = 'SELECT * FROM mc_tabspanel ORDER BY id_tp DESC LIMIT 0,1';
-						break;
-					/*case 'img':
-						$sql = 'SELECT * FROM mc_tabspanel WHERE id_tp = :id';
-						break;*/
-                    case 'img':
-                        $sql = 'SELECT * FROM mc_tabspanel_img WHERE `id_img` = :id';
-                        break;
-                    case 'lastImgId':
-                        $sql = 'SELECT id_img as `index` FROM mc_tabspanel_img WHERE id_tp = :id_tp ORDER BY id_img DESC LIMIT 0,1';
-                        break;
-                    case 'imgDefault':
-                        $sql = 'SELECT id_img FROM mc_tabspanel_img WHERE id_tp = :id AND default_img = 1';
-                        break;
-				}
-
-                return $sql ? component_routing_db::layer()->fetch($sql,$params) : null;
-            }
-        }
-    }
-
-    /**
-     * @param array $config
-     * @param array $params
-	 * @return bool|string
-     */
-    public function insert(array $config, $params = [])
-    {
-		$sql = '';
-
-		switch ($config['type']) {
-			case 'tabspanel':
-				$sql = "INSERT INTO mc_tabspanel(module_tp, id_module, order_tp) 
-						SELECT :module, :id_module, COUNT(id_tp) FROM mc_tabspanel WHERE module_tp = '".$params['module']."'";
-				break;
-			case 'tabspanelContent':
-				$sql = 'INSERT INTO mc_tabspanel_content(id_tp, id_lang, title_tp, desc_tp, published_tp)
-						VALUES (:id_tp, :id_lang, :title_tp, :desc_tp, :published_tp)';
-				break;
-            case 'newImg':
-                $sql = 'INSERT INTO `mc_tabspanel_img`(id_tp,name_img,order_img,default_img) 
-						SELECT :id_tp,:name_img,COUNT(id_img),IF(COUNT(id_img) = 0,1,0) FROM mc_tabspanel_img WHERE id_tp IN ('.$params['id_tp'].')';
-                break;
-		}
-
-		if($sql === '') return 'Unknown request asked';
-
-		try {
-			component_routing_db::layer()->insert($sql,$params);
-			return true;
-		}
-		catch (Exception $e) {
-			return 'Exception : '.$e->getMessage();
-		}
-    }
-
+	protected debug_logger $logger;
+	
 	/**
 	 * @param array $config
 	 * @param array $params
-	 * @return bool|string
+	 * @return array|bool
 	 */
-    public function update(array $config, $params = [])
-    {
-		$sql = '';
+    public function fetchData(array $config, array $params = []) {
+		if($config['context'] === 'all') {
+			switch ($config['type']) {
+				case 'tabspanel':
+					$query = 'SELECT 
+								ms.id_tp,
+								msc.title_tp,
+								IFNULL(mti.default_img,0) as default_img,
+								msc.desc_tp
+							FROM mc_tabspanel AS ms
+							JOIN mc_tabspanel_content msc on (ms.id_tp = msc.id_tp)
+							LEFT JOIN mc_tabspanel_img AS mti ON ( ms.id_tp = mti.id_tp AND mti.default_img = 1 )
+							JOIN mc_lang ml USING(id_lang)
+							WHERE ml.id_lang = :lang
+							  AND ms.module_tp = :module
+							  AND ms.id_module '.(empty($params['id_module']) ? 'IS NULL' : '= :id_module').'
+							ORDER BY ms.order_tp';
+					if(empty($params['id_module'])) unset($params['id_module']);
+					break;
+				case 'active':
+					$query = 'SELECT 
+								ms.id_tp,
+								mtc.title_tp,
+								mtc.desc_tp
+							FROM mc_tabspanel ms
+							JOIN mc_tabspanel_content mtc on (ms.id_tp = mtc.id_tp)
+							JOIN mc_lang ml USING(id_lang)
+							WHERE iso_lang = :iso
+							  AND ms.module_tp = :module_tp
+							  AND ms.id_module '.(empty($params['id_module']) ? 'IS NULL' : '= :id_module').'
+							  AND mtc.published_tp = 1
+							ORDER BY ms.order_tp';
+					if(empty($params['id_module'])) unset($params['id_module']);
+					break;
+				case 'content':
+					$query = 'SELECT ms.*, msc.*
+							FROM mc_tabspanel ms
+							JOIN mc_tabspanel_content msc USING(id_tp)
+							JOIN mc_lang ml USING(id_lang)
+							WHERE ms.id_tp = :id';
+					break;
+				/*case 'img':
+					$query = 'SELECT ms.id_tp, ms.img_tp FROM mc_tabspanel ms WHERE ms.img_tp IS NOT NULL';
+					break;*/
+				case 'images':
+					$query = 'SELECT img.*
+					FROM mc_tabspanel_img AS img
+					WHERE img.id_tp = :id ORDER BY order_img';
+				break;
+				case 'imagesAll':
+					$query = 'SELECT img.* FROM mc_tabspanel_img AS img';
+					break;
+				default:
+					return false;
+			}
 
-		switch ($config['type']) {
-			case 'tabspanelContent':
-				$sql = 'UPDATE mc_tabspanel_content
+			try {
+				return component_routing_db::layer()->fetchAll($query, $params);
+			}
+			catch (Exception $e) {
+				if(!isset($this->logger)) $this->logger = new debug_logger(MP_LOG_DIR);
+				$this->logger->log('statement','db',$e->getMessage(),$this->logger::LOG_MONTH);
+			}
+		}
+		elseif($config['context'] === 'one') {
+			switch ($config['type']) {
+				case 'content':
+					$query = 'SELECT * FROM mc_tabspanel_content WHERE id_tp = :id AND id_lang = :id_lang';
+					break;
+				case 'lastTabspanel':
+					$query = 'SELECT * FROM mc_tabspanel ORDER BY id_tp DESC LIMIT 0,1';
+					break;
+				case 'img':
+					$query = 'SELECT * FROM mc_tabspanel_img WHERE `id_img` = :id';
+					break;
+				case 'lastImgId':
+					$query = 'SELECT id_img as `index` FROM mc_tabspanel_img WHERE id_tp = :id_tp ORDER BY id_img DESC LIMIT 0,1';
+					break;
+				case 'imgDefault':
+					$query = 'SELECT id_img FROM mc_tabspanel_img WHERE id_tp = :id AND default_img = 1';
+					break;
+				case 'countImages':
+					$query = 'SELECT count(id_img) as tot FROM mc_tabspanel_img WHERE id_tp = :id';
+					break;
+				default:
+					return false;
+			}
+
+			try {
+				return component_routing_db::layer()->fetch($query, $params);
+			}
+			catch (Exception $e) {
+				if(!isset($this->logger)) $this->logger = new debug_logger(MP_LOG_DIR);
+				$this->logger->log('statement','db',$e->getMessage(),$this->logger::LOG_MONTH);
+			}
+		}
+		return false;
+    }
+
+    /**
+     * @param string $type
+     * @param array $params
+	 * @return bool
+     */
+    public function insert(string $type, array $params = []): bool {
+		switch ($type) {
+			case 'tabspanel':
+				$query = "INSERT INTO mc_tabspanel(module_tp, id_module, order_tp) 
+						SELECT :module, :id_module, COUNT(id_tp) FROM mc_tabspanel WHERE module_tp = '".$params['module']."'";
+				break;
+			case 'content':
+				$query = 'INSERT INTO mc_tabspanel_content(id_tp, id_lang, title_tp, desc_tp, published_tp)
+						VALUES (:id_tp, :id_lang, :title_tp, :desc_tp, :published_tp)';
+				break;
+            case 'img':
+                $query = 'INSERT INTO `mc_tabspanel_img`(id_tp,name_img,order_img,default_img) 
+						SELECT :id_tp,:name_img,COUNT(id_img),IF(COUNT(id_img) = 0,1,0) FROM mc_tabspanel_img WHERE id_tp IN ('.$params['id_tp'].')';
+                break;
+			default:
+				return false;
+		}
+
+		try {
+			component_routing_db::layer()->insert($query,$params);
+			return true;
+		}
+		catch (Exception $e) {
+			if(!isset($this->logger)) $this->logger = new debug_logger(MP_LOG_DIR);
+			$this->logger->log('statement','db',$e->getMessage(),$this->logger::LOG_MONTH);
+			return false;
+		}
+    }
+
+	/**
+	 * @param string $type
+	 * @param array $params
+	 * @return bool
+	 */
+    public function update(string $type, array $params = []): bool {
+		switch ($type) {
+			case 'content':
+				$query = 'UPDATE mc_tabspanel_content
 						SET 
 							title_tp = :title_tp,
 							desc_tp = :desc_tp,
@@ -151,70 +163,65 @@ class plugins_tabspanel_db
 						AND id_lang = :id_lang';
 				break;
 			case 'order':
-				$sql = 'UPDATE mc_tabspanel 
-						SET order_tp = :order_tp
-						WHERE id_tp = :id_tp';
+				$query = 'UPDATE mc_tabspanel SET order_tp = :order WHERE id_tp = :id';
 				break;
-            case 'order_img':
-                $sql = 'UPDATE mc_tabspanel_img SET order_img = :order_img
-                		WHERE id_img = :id_img';
+            case 'orderImages':
+                $query = 'UPDATE mc_tabspanel_img SET order_img = :order WHERE id_img = :id';
                 break;
             case 'imageDefault':
-                $sql = 'UPDATE mc_tabspanel_img
-                		SET default_img = CASE id_img
-							WHEN :id_img THEN 1
-							ELSE 0
-						END
+                $query = 'UPDATE mc_tabspanel_img
+                		SET default_img = IF(id_img = :id_img, 1, 0)
 						WHERE id_tp = :id';
                 break;
             case 'firstImageDefault':
-                $sql = 'UPDATE mc_tabspanel_img
+                $query = 'UPDATE mc_tabspanel_img
                 		SET default_img = 1
                 		WHERE id_tp = :id 
-						ORDER BY order_img ASC 
+						ORDER BY order_img 
 						LIMIT 1';
                 break;
+			default:
+				return false;
 		}
 
-		if($sql === '') return 'Unknown request asked';
-
 		try {
-			component_routing_db::layer()->update($sql,$params);
+			component_routing_db::layer()->update($query,$params);
 			return true;
 		}
 		catch (Exception $e) {
-			return 'Exception : '.$e->getMessage();
+			if(!isset($this->logger)) $this->logger = new debug_logger(MP_LOG_DIR);
+			$this->logger->log('statement','db',$e->getMessage(),$this->logger::LOG_MONTH);
+			return false;
 		}
     }
 
 	/**
-	 * @param array $config
+	 * @param string $type
 	 * @param array $params
-	 * @return bool|string
+	 * @return bool
 	 */
-	protected function delete(array $config, $params = [])
-    {
-		$sql = '';
-
-		switch ($config['type']) {
+	protected function delete(string $type, array $params = []): bool {
+		switch ($type) {
 			case 'tabspanel':
-				$sql = 'DELETE FROM mc_tabspanel WHERE id_tp IN('.$params['id'].')';
+				$query = 'DELETE FROM mc_tabspanel WHERE id_tp IN('.$params['id'].')';
 				$params = [];
 				break;
-            case 'delImages':
-                $sql = 'DELETE FROM `mc_tabspanel_img` WHERE `id_img` IN ('.$params['id'].')';
-                $params = array();
+            case 'images':
+                $query = 'DELETE FROM `mc_tabspanel_img` WHERE `id_img` IN ('.$params['id'].')';
+                $params = [];
                 break;
+			default:
+				return false;
 		}
 
-		if($sql === '') return 'Unknown request asked';
-
 		try {
-			component_routing_db::layer()->delete($sql,$params);
+			component_routing_db::layer()->delete($query,$params);
 			return true;
 		}
 		catch (Exception $e) {
-			return 'Exception : '.$e->getMessage();
+			if(!isset($this->logger)) $this->logger = new debug_logger(MP_LOG_DIR);
+			$this->logger->log('statement','db',$e->getMessage(),$this->logger::LOG_MONTH);
+			return false;
 		}
 	}
 }

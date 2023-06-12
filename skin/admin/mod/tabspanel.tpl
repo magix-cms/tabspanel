@@ -1,5 +1,5 @@
 <div class="row">
-    <form id="edit_tabspanel" action="{$smarty.server.SCRIPT_NAME}?controller={$smarty.get.controller}&amp;action=edit&amp;edit={$smarty.get.edit}&amp;plugin={$smarty.get.plugin}&amp;mod_action={if !$edit}add{else}edit{/if}" method="post" class="validate_form{if !$edit} add_form collapse in{else} edit_form{/if} col-ph-12 col-sm-12 col-md-12">
+    <form id="edit_tabspanel" action="{$smarty.server.SCRIPT_NAME}?controller={$smarty.get.controller}&amp;action=edit&amp;edit={$smarty.get.edit}&amp;plugin={$smarty.get.plugin}&amp;mod_action={if !$edit}add{else}edit&amp;mod_edit={$smarty.get.mod_edit}{/if}" method="post" class="validate_form{if !$edit} add_form collapse in{else} edit_form{/if} col-ph-12 col-sm-12 col-md-12">
         {include file="language/brick/dropdown-lang.tpl"}
         <div class="row">
             <div class="col-ph-12">
@@ -32,9 +32,6 @@
             </div>
         </div>
         <fieldset>
-            {if $edit}
-                <input type="hidden" name="id" value="{$tabspanel.id_tp}" />
-            {/if}
             <button class="btn btn-main-theme" type="submit" name="action" value="edit">{#save#|ucfirst}</button>
         </fieldset>
     </form>

@@ -43,8 +43,7 @@ require_once ('db.php');
  * @author Aurélien Gérits <aurelien@magix-cms.com>
  * @name plugins_tabspanel_public
  */
-class plugins_tabspanel_public extends plugins_tabspanel_db
-{
+class plugins_tabspanel_public extends plugins_tabspanel_db {
     /**
      * @var object
      */
@@ -165,7 +164,7 @@ class plugins_tabspanel_public extends plugins_tabspanel_db
         $modelSystem = new frontend_model_core($this->template);
         $current = $modelSystem->setCurrentId();
         $newdata = array();
-        $collection = $this->getItems('activetabspanel',array('module_tp' => $params['controller'] ,'id_module' => $current['controller']['id'], 'iso' => $this->getlang),'all',false);
+        $collection = $this->getItems('active',array('module_tp' => $params['controller'] ,'id_module' => $current['controller']['id'], 'iso' => $this->getlang),'all',false);
         foreach($collection as $key => $value){
             $imgCollection = $this->getItems('images', ['id' => $value['id_tp']], 'all', false);
             $newdata[$key]['id'] = $value['id_tp'];
