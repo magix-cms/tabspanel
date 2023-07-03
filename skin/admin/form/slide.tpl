@@ -28,6 +28,10 @@
                                 <div class="row">
                                     <div class="col-xs-12 col-sm-8 col-md-9 col-lg-10">
                                         <div class="form-group">
+                                            <label for="id_banner_{$id}">{#id_banner#|ucfirst} :</label>
+                                            <input type="text" class="form-control" id="id_banner_{$id}" name="banner[content][{$id}][id_banner]" value="{$banner.content[{$id}].id_banner}" />
+                                        </div>
+                                        <div class="form-group">
                                             <label for="title_banner_{$id}">{#title_banner#|ucfirst} :</label>
                                             <input type="text" class="form-control" id="title_banner_{$id}" name="banner[content][{$id}][title_banner]" value="{$banner.content[{$id}].title_banner}" />
                                         </div>

@@ -93,7 +93,7 @@ class plugins_tabspanel_public extends plugins_tabspanel_db {
     public function setItemData($row,$current)
     {
         $string_format = new component_format_string();
-        $data = null;
+        $data = [];
         $extwebp = 'webp';
         //if (!isset($this->imagePlaceHolder)) $this->imagePlaceHolder = $this->logo->getImagePlaceholder();
 
@@ -102,6 +102,7 @@ class plugins_tabspanel_public extends plugins_tabspanel_db {
 
             if (isset($row['name'])) {
                 $data['id'] = $row['id'];
+                $data['tab_id'] = $row['tab_id'];
                 $data['name'] = $row['name'];
                 $data['content'] = $row['content'];
                 //$data['iso'] = $row['iso_lang'];
@@ -168,6 +169,7 @@ class plugins_tabspanel_public extends plugins_tabspanel_db {
         foreach($collection as $key => $value){
             $imgCollection = $this->getItems('images', ['id' => $value['id_tp']], 'all', false);
             $newdata[$key]['id'] = $value['id_tp'];
+            $newdata[$key]['tab_id'] = $value['tab_id_tp'];
             $newdata[$key]['name'] = $value['title_tp'];
             $newdata[$key]['content'] = $value['desc_tp'];
             $newdata[$key]['img'] = $imgCollection;

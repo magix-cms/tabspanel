@@ -19,14 +19,15 @@ class plugins_tabspanel_db {
 				case 'tabspanel':
 					$query = 'SELECT 
 								ms.id_tp,
+								msc.tab_id_tp,
 								msc.title_tp,
 								IFNULL(mti.default_img,0) as default_img,
 								msc.desc_tp
 							FROM mc_tabspanel AS ms
-							JOIN mc_tabspanel_content msc on (ms.id_tp = msc.id_tp)
+							LEFT JOIN mc_tabspanel_content msc on (ms.id_tp = msc.id_tp)
 							LEFT JOIN mc_tabspanel_img AS mti ON ( ms.id_tp = mti.id_tp AND mti.default_img = 1 )
-							JOIN mc_lang ml USING(id_lang)
-							WHERE ml.id_lang = :lang
+							LEFT JOIN mc_lang ml ON (msc.id_lang = ml.id_lang)
+							WHERE (ml.id_lang = :lang OR ml.id_lang IS NULL)
 							  AND ms.module_tp = :module
 							  AND ms.id_module '.(empty($params['id_module']) ? 'IS NULL' : '= :id_module').'
 							ORDER BY ms.order_tp';
@@ -35,6 +36,7 @@ class plugins_tabspanel_db {
 				case 'active':
 					$query = 'SELECT 
 								ms.id_tp,
+								mtc.tab_id_tp,
 								mtc.title_tp,
 								mtc.desc_tp
 							FROM mc_tabspanel ms
@@ -124,8 +126,8 @@ class plugins_tabspanel_db {
 						SELECT :module, :id_module, COUNT(id_tp) FROM mc_tabspanel WHERE module_tp = '".$params['module']."'";
 				break;
 			case 'content':
-				$query = 'INSERT INTO mc_tabspanel_content(id_tp, id_lang, title_tp, desc_tp, published_tp)
-						VALUES (:id_tp, :id_lang, :title_tp, :desc_tp, :published_tp)';
+				$query = 'INSERT INTO mc_tabspanel_content(id_tp, id_lang, tab_id_tp, title_tp, desc_tp, published_tp)
+						VALUES (:id_tp, :id_lang, :tab_id_tp, :title_tp, :desc_tp, :published_tp)';
 				break;
             case 'img':
                 $query = 'INSERT INTO `mc_tabspanel_img`(id_tp,name_img,order_img,default_img) 
@@ -156,6 +158,7 @@ class plugins_tabspanel_db {
 			case 'content':
 				$query = 'UPDATE mc_tabspanel_content
 						SET 
+							tab_id_tp = :tab_id_tp,
 							title_tp = :title_tp,
 							desc_tp = :desc_tp,
 							published_tp = :published_tp

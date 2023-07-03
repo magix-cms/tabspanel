@@ -10,6 +10,10 @@
                                 <div class="row">
                                     <div class="col-xs-12 col-sm-8 col-md-9 col-lg-10">
                                         <div class="form-group">
+                                            <label for="tab_id_tp_{$id}">{#id_banner#|ucfirst} :</label>
+                                            <input type="text" class="form-control" id="tab_id_tp_{$id}" name="content[{$id}][tab_id_tp]" value="{$tabspanel.content[{$id}].id_banner}" />
+                                        </div>
+                                        <div class="form-group">
                                             <label for="title_tabspanel_{$id}">{#title_tp#|ucfirst} :</label>
                                             <input type="text" class="form-control" id="title_tabspanel_{$id}" name="content[{$id}][title_tp]" value="{$tabspanel.content[{$id}].title_tp}" />
                                         </div>

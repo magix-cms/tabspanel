@@ -179,7 +179,9 @@ class plugins_tabspanel_core extends plugins_tabspanel_admin {
 		return $this->data->getItems($type, $id, $context, $assign);
 	}
 	// ----------
-
+    public function getTabsRoot(){
+        return false;
+    }
 	// --- Methods
 	/**
 	 * @param string $type
@@ -207,6 +209,7 @@ class plugins_tabspanel_core extends plugins_tabspanel_admin {
 
 				$arr[$tabspanel['id_tp']]['content'][$tabspanel['id_lang']] = [
 					'id_lang' => $tabspanel['id_lang'],
+					'id_banner' => $tabspanel['tab_id_tp'],
 					'title_tp' => $tabspanel['title_tp'],
 					'desc_tp' => $tabspanel['desc_tp'],
 					'published_tp' => $tabspanel['published_tp']
