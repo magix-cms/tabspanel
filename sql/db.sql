@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `mc_tabspanel_content` (
   `id_content` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `id_tp` int(11) unsigned NOT NULL,
   `id_lang` smallint(3) unsigned NOT NULL,
+  `tab_id_tp` varchar(125) NOT NULL,
   `title_tp` varchar(125) NOT NULL,
   `desc_tp` text,
   `published_tp` smallint(1) unsigned NOT NULL default 0,
@@ -39,6 +40,3 @@ INSERT INTO `mc_config_img` (`id_config_img`, `module_img`, `attribute_img`, `wi
   (null, 'tabspanel', 'tabspanel', '208', '208', 'small', 's', 'adaptive'),
   (null, 'tabspanel', 'tabspanel', '408', '408', 'medium', 'm', 'adaptive'),
   (null, 'tabspanel', 'tabspanel', '1000', '1000', 'large', 'l', 'basic');
-
-INSERT INTO `mc_admin_access` (`id_role`, `id_module`, `view`, `append`, `edit`, `del`, `action`)
-  SELECT 1, m.id_module, 1, 1, 1, 1, 1 FROM mc_module as m WHERE name = 'tabspanel';
